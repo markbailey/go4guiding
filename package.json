@@ -1,7 +1,36 @@
 {
-  "name": "root",
+  "name": "@go4guiding/go4pwa",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run functions\" \"npm start\"",
+    "start": "vite",
+    "functions": "cd \"functions\" && npm run dev",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.8.6",
+    "firebase": "^9.12.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.0.4",
+    "react-router-dom": "^6.4.2"
+  },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "@testing-library/react": "^13.4.0",
+    "@types/node": "^18.11.0",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@types/react-redux": "^7.1.24",
+    "@vitejs/plugin-react": "^2.1.0",
+    "autoprefixer": "^10.4.12",
+    "concurrently": "^7.4.0",
+    "dotenv": "^16.0.3",
+    "postcss": "^8.4.18",
+    "tailwindcss": "^3.1.8",
+    "typescript": "^4.6.4",
+    "vite": "^3.1.0"
   }
 }
