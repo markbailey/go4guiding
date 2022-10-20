@@ -28,3 +28,4 @@ dist-ssr
 
 # Storybook
 src/stories/example/*
+functions/.env
