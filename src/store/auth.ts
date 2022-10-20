@@ -4,9 +4,16 @@ import {
   createSlice,
   ThunkDispatch
 } from '@reduxjs/toolkit';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import {
+  Auth,
+  onAuthStateChanged,
+  onIdTokenChanged,
+  signInWithEmailAndPassword,
+  User
+} from 'firebase/auth';
 import { auth } from '../services/firebase';
 
+const EMAIL_SUFFIX = import.meta.env.VITE_EMAIL_SUFFIX;
 const initialState: AuthState = {
   token: null,
   user: null,
@@ -16,9 +23,54 @@ const initialState: AuthState = {
 };
 
 // Redux Thunks
+export const signOut = createAsyncThunk(
+  'auth/signOut',
+  async () => await signOutOfFirebase(auth)
+);
+
+export const signIn = createAsyncThunk(
+  'auth/signIn',
+  async (params: SignInParams) => {
+    const { username, password } = params;
+    const emailAddress = `${username}${EMAIL_SUFFIX}`;
+    await signInWithEmailAndPassword(auth, emailAddress, password);
+  }
+);
+
 export const verifyAuth = createAsyncThunk(
   'auth/verifyAuth',
-  async (user: User | null) => {}
+  async (user: User | null) => {
+    if (!user) return { token: null, user: null };
+    const { claims } = await user.getIdTokenResult();
+    const { unitId, patrolId, role } = claims as UserClaims;
+    const { displayName, email, uid, emailVerified, metadata } = user;
+    const { creationTime, lastSignInTime } = metadata;
+
+    const createdAt = creationTime
+      ? new Date(creationTime).toLocaleDateString()
+      : null;
+    const lastSignedInAt = lastSignInTime
+      ? new Date(lastSignInTime).toLocaleDateString()
+      : null;
+
+    const token = await user.getIdToken();
+    const newUser = {
+      uid,
+      email,
+      emailVerified,
+      displayName,
+      unitId,
+      patrolId,
+      role,
+      createdAt,
+      lastSignedInAt
+    };
+
+    return {
+      token,
+      user: newUser
+    };
+  }
 );
 
 // Events
@@ -32,13 +84,44 @@ export function onAuthChanged(
   });
 }
 
+export function onTokenChanged(
+  dispatch: ThunkDispatch<AuthState, undefined, AnyAction>,
+  onlyOnce: boolean = false
+) {
+  const unsubscribe = onIdTokenChanged(auth, async (user) => {
+    dispatch(verifyAuth(user));
+    if (onlyOnce) unsubscribe();
+  });
+}
+
 // Store slice
 const slice = createSlice({
   name: 'auth',
   initialState,
   reducers: {},
-  extraReducers: (builder) => {}
+  extraReducers: (builder) => {
+    // Verify Auth
+    builder.addCase(verifyAuth.fulfilled, (state, action) => {
+      if (!action.payload) return;
+      const { token, user } = action.payload;
+
+      state.token = token;
+      state.user = user as UserState | null;
+      state.isValid = user !== null && token !== null;
+      state.isLoading = user?.role === null;
+      state.error = null;
+    });
+
+    builder.addCase(verifyAuth.rejected, (state, action) => {
+      state.error = action.payload as Error | null;
+      state.isValid = false;
+      state.isLoading = false;
+    });
+  }
 });
 
 // export const {} = slice.actions;
 export const reducer = slice.reducer;
+function signOutOfFirebase(auth: Auth): any {
+  throw new Error('Function not implemented.');
+}

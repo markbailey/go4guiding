@@ -2,6 +2,12 @@
 
 // AUTHENTICATION
 declare type Role = 'admin' | 'leader' | 'member';
+declare type UserClaims = {
+  unitId: string | null;
+  patrolId: string | null;
+  role: Role;
+};
+
 declare type SignUpTokenResult = {
   expiresAt: string;
   usesRemaining: number;
@@ -24,14 +30,14 @@ declare type SignUpParams = {
 // States
 declare type UserState = {
   uid: string;
-  email: string | null;
+  email?: string | null;
   emailVerified: boolean;
-  displayName: string | null;
+  displayName?: string | null;
   unitId?: string;
   patrolId?: string;
   role: Role;
-  createdAt: string;
-  lastSignedInAt: string;
+  createdAt: string | null;
+  lastSignedInAt: string | null;
 };
 
 declare type AuthState = {
