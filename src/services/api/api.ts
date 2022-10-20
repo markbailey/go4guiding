@@ -1,7 +1,17 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../store';
+import { RootState } from '../../store';
 
-const { VITE_API_URL } = import.meta.env;
+type BaseQuery = { baseUrl: string };
+type BaseQueryFN = { body: string };
+
+const { VITE_API_URL, VITE_API_VERSION } = import.meta.env;
+export const apiVersion: number = parseFloat(VITE_API_VERSION || '1');
+export const getUrlWithVersion = (url: string, version = apiVersion) =>
+  `/v${version}${url}`;
+
+export const firebaseBaseQuery =
+  ({ baseUrl }: BaseQuery) =>
+  async ({ body }: BaseQueryFN) => {};
 
 const api = createApi({
   reducerPath: 'api',
@@ -17,7 +27,7 @@ const api = createApi({
       return headers;
     }
   }),
-  tagTypes: ['Admin'],
+  tagTypes: [],
   endpoints: (builder) => ({})
 });
 
