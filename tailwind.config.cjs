@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-const girlGuidingColors = require('./src/data/girlguiding-colours.json');
-const awardThemeColors = require('./src/data/award-theme-colours.json');
-const baseColors = require('./src/data/base-colours.json');
+const girlGuidingColors = require('./src/data/girlguiding-colors.json');
+const awardThemeColors = require('./src/data/theme-awards-colors.json');
+const baseColors = require('./src/data/base-colors.json');
 
 module.exports = {
   mode: 'jit',
