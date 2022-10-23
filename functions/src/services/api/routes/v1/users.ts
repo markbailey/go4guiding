@@ -8,7 +8,7 @@ import { getUsers } from '../../functions/user';
 export const BASE_SLUG = '/users';
 const users = express.Router();
 
-users.post(
+users.get(
   '/getByUnit/:unitId',
   withAuthorization<User[]>(
     ['leader'],
@@ -20,6 +20,30 @@ users.post(
           throw new RequestError(401, 'Unauthorized');
         const filter = (user: UserRecord) =>
           user.customClaims?.unitId === unitId;
+        const users = await getUsers(undefined, filter);
+        response.status(200).json(users);
+      } catch (error) {
+        next(error);
+      }
+    }
+  )
+);
+
+users.get(
+  '/getByPatrol/:patrolId',
+  withAuthorization<User[]>(
+    ['member'],
+    async (request, response, next, currentUser: User) => {
+      const { patrolId } = request.params;
+
+      try {
+        if (
+          currentUser.patrolId === undefined ||
+          currentUser.patrolId !== patrolId
+        )
+          throw new RequestError(401, 'Unauthorized');
+        const filter = (user: UserRecord) =>
+          user.customClaims?.patrolId === patrolId;
         const users = await getUsers(undefined, filter);
         response.status(200).json(users);
       } catch (error) {
