@@ -1,22 +1,16 @@
 {
   "rules": {
-    "awardProgress": {
-      "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
-      }
-    },
     "awardTargets": {
-      ".read": true,
-      ".write": "auth != null && auth.token.role == 'admin'"
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.role == 'leader'"
     },
-    "signUpTokens": {
-      ".read": true,
-      ".write": "auth != null"
+    "themes": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.role == 'leader'"
     },
     "units": {
-      ".read": true,
-      ".write": "auth != null && auth.token.role == 'admin'"
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.role == 'leader'"
     }
   }
 }
