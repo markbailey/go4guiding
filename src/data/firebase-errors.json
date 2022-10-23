@@ -1,0 +1,8 @@
+{
+  "auth": {
+    "network-request-failed": "Unable to contact the auth server. Please check your internet connection and try again",
+    "too-many-requests": "You account has been temporarily disabled due to many failed sign in attempts",
+    "user-not-found": "Invalid username or password",
+    "wrong-password": "Invalid username or password"
+  }
+}
