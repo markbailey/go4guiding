@@ -4,6 +4,7 @@ import {
   createSlice,
   ThunkDispatch
 } from '@reduxjs/toolkit';
+
 import {
   Auth,
   onAuthStateChanged,
@@ -11,9 +12,12 @@ import {
   signInWithEmailAndPassword,
   User
 } from 'firebase/auth';
+
 import { auth } from '../services/firebase';
+import { getMyUnit } from '../services/firebase';
 
 const EMAIL_SUFFIX = import.meta.env.VITE_EMAIL_SUFFIX;
+const EMPTY_STATE = { token: null, user: null };
 const initialState: AuthState = {
   token: null,
   user: null,
@@ -39,8 +43,8 @@ export const signIn = createAsyncThunk(
 
 export const verifyAuth = createAsyncThunk(
   'auth/verifyAuth',
-  async (user: User | null) => {
-    if (!user) return { token: null, user: null };
+  async (user: User | null, { dispatch }) => {
+    if (user === null) return { ...EMPTY_STATE };
     const { claims } = await user.getIdTokenResult();
     const { unitId, patrolId, role } = claims as UserClaims;
     const { displayName, email, uid, emailVerified, metadata } = user;
@@ -53,13 +57,18 @@ export const verifyAuth = createAsyncThunk(
       ? new Date(lastSignInTime).toLocaleDateString()
       : null;
 
+    // Get the users Unit
+    const myUnitResult = dispatch(getMyUnit(unitId));
+    myUnitResult.unsubscribe();
+    const { data } = await myUnitResult;
+
     const token = await user.getIdToken();
-    const newUser = {
+    const signedInUser = {
       uid,
-      email,
+      email: email!,
       emailVerified,
       displayName,
-      unitId,
+      unit: data!,
       patrolId,
       role,
       createdAt,
@@ -68,7 +77,7 @@ export const verifyAuth = createAsyncThunk(
 
     return {
       token,
-      user: newUser
+      user: signedInUser
     };
   }
 );
