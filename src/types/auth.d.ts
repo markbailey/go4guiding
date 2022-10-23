@@ -3,8 +3,8 @@
 // AUTHENTICATION
 declare type Role = 'admin' | 'leader' | 'member';
 declare type UserClaims = {
-  unitId: string | null;
-  patrolId: string | null;
+  unitId: string;
+  patrolId?: string;
   role: Role;
 };
 
@@ -30,11 +30,11 @@ declare type SignUpParams = {
 // States
 declare type UserState = {
   uid: string;
-  email?: string | null;
+  email: string;
   emailVerified: boolean;
-  displayName?: string | null;
-  unitId?: string;
-  patrolId?: string;
+  displayName: string;
+  unit: Unit;
+  patrolId: string;
   role: Role;
   createdAt: string | null;
   lastSignedInAt: string | null;
