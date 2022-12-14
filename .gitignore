@@ -27,5 +27,5 @@ dist-ssr
 *.sw?
 
 # Storybook
-src/stories/example/*
+src/stories/examples/*
 functions/.env
