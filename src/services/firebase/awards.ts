@@ -1,8 +1,8 @@
 import { FirebaseError } from 'firebase/app';
 import { ONE_DAY } from '../../common';
 import { RootState } from '../../store';
-import { getCollection } from './firebase';
-import db from './db';
+import { getCollection, onRead } from './firebase';
+import dbApi from './db';
 
 export const THEMES_TAG_TYPE = 'Themes';
 export const TARGETS_TAG_TYPE = 'AwardTargets';
@@ -17,13 +17,7 @@ enum CacheDuration {
   Themes = ONE_DAY
 }
 
-// Firebase Queries
-const getTargets = (programme: string) =>
-  getCollection<AwardTargets>(`${Slug.AwardTargets}${programme}`);
-const getThemesByProgramme = (programme: string) =>
-  getCollection<ThemeData[]>(`${Slug.Themes}${programme}`);
-
-const awards = db
+const awards = dbApi
   .enhanceEndpoints({
     // For RTK Query, tags are just a name that you can give to a specific collection of data to control
     // caching and invalidation behavior for re-fetching purposes.
@@ -36,13 +30,13 @@ const awards = db
       getAwardTargets: builder.query<AwardTargets, void>({
         // arg, api, extraOptions, baseQuery
         async queryFn(arg, api) {
-          const { auth } = api.getState() as RootState;
-          const programme = auth.user?.unit.guidingProgramme!;
           // const callback = () =>
           //   api.dispatch(awards.util.invalidateTags([TARGETS_TAG_TYPE]));
-
           try {
-            const awardTargets = await getTargets(programme);
+            const { auth } = api.getState() as RootState;
+            const programme = auth.user?.unit.guidingProgramme!;
+            const path = `${Slug.AwardTargets}${programme}`;
+            const awardTargets = await getCollection<AwardTargets>(path, true);
             return { data: awardTargets };
           } catch (error) {
             return { error: error as FirebaseError };
@@ -55,23 +49,29 @@ const awards = db
       getThemes: builder.query<ThemeData[], void>({
         // arg, api, extraOptions, baseQuery
         async queryFn(arg, api) {
-          const { auth } = api.getState() as RootState;
-          const programme = auth.user?.unit.guidingProgramme!;
           // const callback = (data: ThemeData[]) =>
           //   api.dispatch(
           //     awards.util.updateQueryData('getThemes', arg, (drafts) => data)
           //   );
           try {
-            const themes = await getThemesByProgramme(programme);
+            const { invalidateTags } = awards.util;
+            const { getState, dispatch } = api;
+            const { auth } = getState() as RootState;
+            const programme = auth.user?.unit.guidingProgramme!;
+            const path = `${Slug.Themes}${programme}`;
+            const themes = await getCollection<ThemeData[]>(path, true);
+
+            onRead(path, () => dispatch(invalidateTags([THEMES_TAG_TYPE])));
+            console.log('getThemes!', themes);
             return { data: themes };
           } catch (error) {
             return { error: error as FirebaseError };
           }
         },
-        async onQueryStarted(arg, api) {
-          const { dispatch } = api;
-          const { updateQueryData } = awards.util;
-        },
+        // async onQueryStarted(arg, api) {
+        //   const { dispatch } = api;
+        //   const { updateQueryData } = awards.util;
+        // },
         providesTags: [THEMES_TAG_TYPE],
         keepUnusedDataFor: CacheDuration.Themes
       }),
@@ -79,22 +79,17 @@ const awards = db
       getTheme: builder.query<ThemeData, string | undefined>({
         // arg, api, extraOptions, baseQuery
         async queryFn(slug, api) {
-          const getThemes = api.dispatch(awards.endpoints.getThemes.initiate());
-          const { data } = (await getThemes) as { data: ThemeData[] };
-          const name = slug
-            ?.split('-')
-            .map(
-              (value) =>
-                value.substring(0, 1).toUpperCase() +
-                value.substring(1).toLowerCase()
-            )
-            .join(' ');
           try {
-            return { data: data?.find((theme) => theme.name === name) };
+            const { getThemes } = awards.endpoints;
+            const getThemesAsync = api.dispatch(getThemes.initiate());
+            const { data } = (await getThemesAsync) as ApiResponse<ThemeData[]>;
+
+            return { data: data?.find((theme) => theme.slug === slug) };
           } catch (error) {
             return { error: error as FirebaseError };
           }
-        }
+        },
+        keepUnusedDataFor: 0
       })
     })
   });
@@ -102,6 +97,7 @@ const awards = db
 // Query actions for use with dispatch
 export const getAwardTargets = awards.endpoints.getAwardTargets.initiate;
 export const getThemes = awards.endpoints.getThemes.initiate;
+export const getTheme = awards.endpoints.getTheme.initiate;
 
 // Export hooks for usage in functional components, which are
 // auto-generated based on the defined endpoints

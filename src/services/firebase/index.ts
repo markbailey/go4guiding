@@ -3,7 +3,10 @@ export { default as db } from './db';
 export {
   useGetAwardTargetsQuery,
   useGetThemesQuery,
-  useGetThemeQuery
+  useGetThemeQuery,
+  getThemes,
+  getTheme,
+  getAwardTargets
 } from './awards';
 export {
   getMyUnit,
