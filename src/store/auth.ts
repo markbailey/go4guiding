@@ -6,10 +6,10 @@ import {
 } from '@reduxjs/toolkit';
 
 import {
-  Auth,
   onAuthStateChanged,
   onIdTokenChanged,
   signInWithEmailAndPassword,
+  signOut as signOutOfFirebase,
   User
 } from 'firebase/auth';
 
@@ -131,6 +131,3 @@ const slice = createSlice({
 
 // export const {} = slice.actions;
 export const reducer = slice.reducer;
-function signOutOfFirebase(auth: Auth): any {
-  throw new Error('Function not implemented.');
-}
