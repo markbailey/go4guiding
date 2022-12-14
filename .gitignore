@@ -26,6 +26,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Storybook
+# Other
+backup
 src/stories/examples/*
 functions/.env
