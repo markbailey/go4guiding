@@ -19,7 +19,7 @@ export type AuthRequestHandler = (
 export function getAuthorizationToken(request: Request): string | null {
   const { authorization = ' ' } = request.headers;
   const [scheme, token] = authorization.split(' ');
-  return scheme !== 'Bearer' && token !== '' ? token : null;
+  return scheme === 'Bearer' && token !== '' ? token : null;
 }
 
 // Request handler with authorisation

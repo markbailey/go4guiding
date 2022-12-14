@@ -11,13 +11,14 @@ const users = express.Router();
 users.get(
   '/getByUnit/:unitId',
   withAuthorization<User[]>(
-    ['leader'],
+    ['leader', 'member'],
     async (request, response, next, currentUser: User) => {
       const { unitId } = request.params;
 
       try {
-        if (currentUser.unitId !== undefined && currentUser.unitId !== unitId)
+        if (currentUser.unitId === undefined || currentUser.unitId !== unitId)
           throw new RequestError(401, 'Unauthorized');
+
         const filter = (user: UserRecord) =>
           user.customClaims?.unitId === unitId;
         const users = await getUsers(undefined, filter);
