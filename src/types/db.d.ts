@@ -23,6 +23,7 @@ interface SkillsBuilder {
 interface ThemeData {
   name: string;
   description: string;
+  slug: string;
   interestBadges: InterestBadge[];
   skillsBuilders: SkillsBuilder[];
   unitMeetingActivities: Activity[];
