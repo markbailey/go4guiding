@@ -1,35 +1,25 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Unauthorised } from './error';
 
 export interface PrivateRouteProps {
-  user: UserState | null;
+  isAuthorised: boolean;
   isAuthenticating: boolean;
-  authorisedRoles: Role[];
+  isSignedIn: boolean;
 }
 
 function PrivateRoute(Props: PrivateRouteProps) {
-  const { authorisedRoles, user, isAuthenticating } = Props;
+  const { isAuthorised, isAuthenticating, isSignedIn } = Props;
   const location = useLocation();
   const navigate = useNavigate();
 
-  const userIsValid = useMemo(() => {
-    return (
-      user !== null &&
-      user.role !== undefined &&
-      authorisedRoles.includes(user.role)
-    );
-  }, [user, authorisedRoles]);
-
-  const isUnauthorised = useMemo(() => {
-    return !isAuthenticating && !userIsValid;
-  }, [isAuthenticating, userIsValid]);
-
   useEffect(() => {
-    if (!isAuthenticating && !userIsValid)
-      navigate(`/sign-in?r=${encodeURI(location.pathname)}`);
-  }, [userIsValid, isAuthenticating, location, navigate]);
+    if (!isAuthenticating && !isSignedIn)
+      navigate('/sign-in', { state: { from: location }, replace: true });
+  }, [isSignedIn, isAuthenticating, location, navigate]);
 
-  return !isUnauthorised ? <Outlet /> : <div>{'Unauthorised Access'}</div>;
+  if (isAuthenticating) return <div>{'Authenticating...'}</div>;
+  return isAuthorised ? <Outlet /> : <Unauthorised />;
 }
 
 export default PrivateRoute;

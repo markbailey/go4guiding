@@ -1,32 +1,23 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { MemberRoles } from './common';
-import { RootState, onAuthChanged } from './store';
+import { onAuthChanged, RootState } from './store';
 import { useAppDispatch, useAppSelector } from './hooks';
-import PrivateRoute, { PrivateRouteProps } from './components/PrivateRoute';
+import PrivateRoute from './components/PrivateRoute';
+import { NotFound } from './components/error';
 import { SignInPage } from './pages/auth';
-import { HomePage, ThemesPage } from './pages/member';
 
 function App() {
   const dispatch = useAppDispatch();
-  const { user, isLoading: isAuthenticating } = useAppSelector(
-    (state: RootState) => state.auth
-  );
-
-  const PR = useMemo(
-    () => (props: Partial<PrivateRouteProps>) => {
-      const { authorisedRoles, ...otherProps } = props;
-      return (
-        <PrivateRoute
-          {...otherProps}
-          user={user}
-          authorisedRoles={authorisedRoles || []}
-          isAuthenticating={isAuthenticating}
-        />
-      );
-    },
-    [user, isAuthenticating]
+  const { user, isLoading } = useAppSelector((state: RootState) => state.auth);
+  const privateProps = useCallback(
+    (roles: Role[]) => ({
+      isAuthorised: roles.includes(user?.role as Role),
+      isAuthenticating: isLoading,
+      isSignedIn: user !== null
+    }),
+    [user, isLoading]
   );
 
   useEffect(() => onAuthChanged(dispatch), [dispatch]);
@@ -37,12 +28,11 @@ function App() {
       <Route path="/sign-in" element={<SignInPage />} />
 
       {/* Member Routes */}
-      <Route path="/" element={<PR authorisedRoles={MemberRoles} />}>
-        <Route index element={<HomePage />} />
-        <Route path="/themes/:theme" element={<ThemesPage />} />
+      <Route path="/" element={<PrivateRoute {...privateProps(MemberRoles)} />}>
+        <Route index element={<h1>Home Page</h1>} />
+        <Route path="themes" element={<h1>Themes</h1>} />
+        <Route path="themes/:theme" element={<h1>Theme</h1>} />
       </Route>
-
-      {/* Admin Routes (/admin) */}
 
       {/* 301 Redirects */}
       <Route
@@ -51,7 +41,7 @@ function App() {
       />
 
       {/* Catch All Route */}
-      <Route path="*" element={<div>{'Page Not Found'}</div>} />
+      <Route path="*" element={<NotFound message="Page Not Found" />} />
     </Routes>
   );
 }

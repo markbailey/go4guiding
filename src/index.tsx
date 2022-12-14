@@ -1,12 +1,13 @@
+import './assets/stylesheets/index.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
 
-import * as serviceWorker from './serviceWorker';
 import { store } from './store';
 import App from './App';
-import './assets/stylesheets/index.css';
+
+import * as serviceWorker from './serviceWorker';
+import { BrowserRouter } from 'react-router-dom';
 
 const element = document.getElementById('root') as HTMLElement;
 const root = createRoot(element);

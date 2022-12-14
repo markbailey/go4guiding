@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import appConfig from '../data/app-config.json';
 
-const useDocumentTitle = (title: string) => {
+const useDocumentTitle = (
+  title: string
+): [string, Dispatch<SetStateAction<string>>] => {
   const [documentTitle, setDocumentTitle] = useState(title);
 
   useEffect(() => {

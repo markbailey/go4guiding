@@ -1,4 +1,8 @@
 {
   "appName": "Go4PWA",
-  "company": "Go4Guiding"
+  "company": "Go4Guiding",
+  "author": {
+    "name": "Mark Bailey",
+    "email": null
+  }
 }
