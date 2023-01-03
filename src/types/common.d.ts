@@ -4,6 +4,8 @@ declare interface DispatchAction<T extends unknown> {
   payload?: T;
 }
 
+declare type PropsWithIndex<P extends EmptyProps> = P & { index: number };
+
 // Support for MediaQueries
 declare interface Event {
   matches: boolean;
